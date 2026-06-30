@@ -130,6 +130,27 @@ button:disabled{opacity:.4;cursor:not-allowed;filter:none;transform:none;}
 .done-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
 .hint{font-size:11px;color:var(--text3);}
 
+/* Guide panel (right) */
+#guide{width:344px;flex-shrink:0;background:#fff;border-left:1px solid var(--border);display:flex;flex-direction:column;min-height:0;}
+#guide.collapsed{display:none;}
+.guide-hd{padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;font-weight:900;font-size:13px;color:var(--text);flex-shrink:0;background:linear-gradient(135deg,var(--primary-bg),var(--teal-bg));}
+.guide-hd .gx{margin-left:auto;cursor:pointer;color:var(--text3);font-weight:900;font-size:15px;line-height:1;}
+.guide-hd .gx:hover{color:var(--coral);}
+.guide-bd{flex:1;overflow:auto;padding:13px 15px;display:flex;flex-direction:column;gap:15px;font-size:12px;line-height:1.65;color:var(--text2);}
+.gsec{display:flex;flex-direction:column;gap:6px;}
+.gsec h4{font-size:12.5px;font-weight:900;color:var(--text);display:flex;align-items:center;gap:7px;}
+.gsec h4 .n{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;background:var(--primary);color:#fff;font-size:10px;flex-shrink:0;}
+.gsec p{margin:0;}
+.gsec ul{margin:0;padding-left:17px;display:flex;flex-direction:column;gap:5px;}
+.gsec li{padding-left:2px;}
+.gsec .em{color:var(--text);font-weight:700;}
+.gsec .kw{color:var(--primary);font-weight:700;}
+.gkbd{color:var(--text3);font-size:11px;}
+.gnote{background:var(--amber-bg);border-left:3px solid var(--amber);border-radius:0 6px 6px 0;padding:8px 11px;font-size:11.5px;color:var(--text);line-height:1.6;}
+.gtag-spec{color:var(--amber);font-weight:800;}
+.gtag-shar{color:var(--slate);font-weight:800;}
+.gdiv{height:1px;background:var(--border);margin:1px 0;}
+
 /* Toast */
 #toast{position:fixed;top:64px;right:14px;background:var(--text);color:#fff;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;z-index:300;opacity:0;transform:translateX(20px);transition:all .2s;pointer-events:none;box-shadow:var(--shadow-lg);max-width:360px;line-height:1.4;}
 #toast.show{opacity:1;transform:translateX(0);}
@@ -156,6 +177,7 @@ kbd{display:inline-block;background:var(--bg2);border:1px solid var(--border);bo
     <button class="btn-ghost btn-sm" id="switchBtn" title="切换标注员">切换</button>
     <span class="pill" id="progPill">0/0</span>
     <button class="btn-ghost btn-sm" id="undoBtn" title="撤销最近一次编辑 (Ctrl+Z)" disabled>↶ 撤销</button>
+    <button class="btn-ghost btn-sm" id="guideToggle" title="显示/隐藏右侧说明">📖 说明</button>
     <span class="status-dot saved" id="savedDot" title="自动保存"></span>
   </div>
 </header>
@@ -193,6 +215,76 @@ kbd{display:inline-block;background:var(--bg2);border:1px solid var(--border);bo
     </div>
     <div id="scroller">
       <div class="empty-state"><div class="big">🎬</div><div>请先登录,然后从左侧选择一组</div></div>
+    </div>
+  </div>
+
+  <!-- Guide panel (right) -->
+  <div id="guide">
+    <div class="guide-hd"><span>📖</span><span>标注说明</span><span class="gx" id="guideClose" title="隐藏">✕</span></div>
+    <div class="guide-bd">
+
+      <div class="gsec">
+        <h4>🎯 这个 bench 在测什么</h4>
+        <p>这是一个<span class="em">时序 caption 的「可区分性 (distinctiveness)」</span>评测集。一句好的<span class="em">时序</span> caption,必须说出<span class="kw">这个片段独有</span>的内容,而不是泛泛地把 query 复述一遍。</p>
+        <ul>
+          <li>每个<span class="em">组 (group)</span> = 一个视频 + 一个共享 <span class="kw">query</span>,这个 query 在该视频里出现在 <span class="em">K 个不同片段</span>。</li>
+          <li>这 K 个同 query 片段是<span class="em">天然的强干扰项</span>:它们都满足 query,只在<span class="em">细节</span>上不同 → 逼模型写出区分性。</li>
+        </ul>
+      </div>
+
+      <div class="gsec">
+        <h4>🤖 Gemini 预标了什么(你来核验)</h4>
+        <ul>
+          <li><span class="gtag-spec">★ specific</span> = 该段<span class="em">独有</span>的事实(区分性的关键)。</li>
+          <li><span class="gtag-shar">· shared</span> = 全组<span class="em">共有</span>的事实(≈ query 本身)。</li>
+          <li><span class="em">negatives</span> = 看似合理、但画面里<span class="em">其实不存在</span>的描述。</li>
+        </ul>
+        <div class="gnote">这些只是<span class="em">机器预标</span>,正式评分<span class="em">不依赖任何 LLM 裁判</span> —— 全靠你这一步人工核验把关。</div>
+      </div>
+
+      <div class="gdiv"></div>
+
+      <div class="gsec">
+        <h4><span class="n">①</span>结构正确性(决定整组去留)</h4>
+        <ul>
+          <li><span class="em">每段</span> · <span class="kw">query 是否真的在此段出现?</span> Gemini 偶尔会选错段 → 选「否」剔除。</li>
+          <li><span class="em">整组</span> · <span class="kw">各段是否是不同的独立时刻?</span> 若其实是<span class="em">同一次发生被切成几段</span>,选「否」。</li>
+          <li>据此给整组结论:<span class="em">✓ 保留</span> / <span class="em">✗ 丢弃</span>。</li>
+        </ul>
+      </div>
+
+      <div class="gsec">
+        <h4><span class="n">②</span>探针质量(逐段三项)</h4>
+        <ul>
+          <li><span class="em">facts</span> 是否与画面相符(对 / 有问题)。</li>
+          <li><span class="em">specific</span> 标签是否合理:标 specific 的<span class="em">确实是本段独有</span>,而不是全组都有。</li>
+          <li><span class="em">negatives</span> 是否<span class="em">确实不存在</span>于画面。</li>
+          <li>发现个别错的 → 直接<span class="kw">点那条 fact / negative 文本</span>把它划掉标记。</li>
+        </ul>
+      </div>
+
+      <div class="gdiv"></div>
+
+      <div class="gsec">
+        <h4>🖱 怎么操作</h4>
+        <ul>
+          <li>左侧选组;视频可<span class="em">播放 / 循环</span>反复看。</li>
+          <li>点 chip 选「是/否」「对/有问题」;点 fact/negative 文本标错。</li>
+          <li>填完<span class="em">每段①+②三项、组①(是否不同+保留/丢弃)</span>后,点绿色<span class="em">「标记本组完成」</span>自动跳下一组。</li>
+          <li><span class="em">自动保存</span>(右上圆点:绿=已存)。<span class="gkbd">快捷键: <kbd>Ctrl+Z</kbd> 撤销 · <kbd>J</kbd>/<kbd>K</kbd> 上/下一组</span></li>
+        </ul>
+      </div>
+
+      <div class="gsec">
+        <h4>💡 判断小贴士</h4>
+        <ul>
+          <li><span class="em">该 reject 的</span>:query 根本没出现 / K 段其实是同一次 occurrence / 片段损坏看不清。</li>
+          <li><span class="em">specific 标错</span>:把<span class="em">全组都有</span>的东西标成了 specific。</li>
+          <li><span class="em">negative 标错</span>:写的「不存在」其实画面里<span class="em">有</span>。</li>
+          <li>左侧带 <span style="color:var(--coral);font-weight:900;">⚠</span> 的组是 Gemini 自动标记的可疑组,<span class="em">优先重点看</span>。</li>
+        </ul>
+      </div>
+
     </div>
   </div>
 </div>
@@ -440,6 +532,12 @@ document.addEventListener('keydown',e=>{
   else if(e.key.toLowerCase()==='k'){if(idx>=0&&idx<groups.length-1)selectGroup(groups[idx+1].gid);}
 });
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
+
+/* ---------- Guide panel toggle ---------- */
+function setGuide(open){$('guide').classList.toggle('collapsed',!open);localStorage.setItem('tcb_guide',open?'1':'0');}
+$('guideToggle').onclick=()=>setGuide($('guide').classList.contains('collapsed'));
+$('guideClose').onclick=()=>setGuide(false);
+setGuide(localStorage.getItem('tcb_guide')!=='0');
 
 initLogin();
 </script>
