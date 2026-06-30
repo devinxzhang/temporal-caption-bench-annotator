@@ -20,8 +20,8 @@ into ★specific / ·shared, and `negatives`). You verify them:
 ## Setup (each collaborator, once)
 
 ```bash
-git clone <this-repo-url>
-cd tcb_annotator
+git clone https://github.com/devinxzhang/temporal-caption-bench-annotator.git
+cd temporal-caption-bench-annotator
 pip install -r requirements.txt
 
 # log in to HuggingFace if the dataset is gated/private (skip if public):
