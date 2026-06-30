@@ -1,0 +1,13 @@
+# downloaded data (pulled from HuggingFace, not committed)
+/data/
+manifest.json
+assignments.json
+
+# local annotation output — each annotator keeps/sends their own
+/annotations/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
