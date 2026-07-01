@@ -90,6 +90,15 @@ button:disabled{opacity:.4;cursor:not-allowed;filter:none;transform:none;}
 .flag{background:var(--coral-bg);color:var(--coral);border-radius:5px;padding:2px 8px;font-size:11px;font-weight:800;}
 .gemini-note{font-size:11px;color:var(--text3);}
 
+/* Timeline strip (segments over full video duration) */
+.tl-label{font-size:10px;color:var(--text3);font-weight:700;}
+.tl-wrap{display:flex;align-items:center;gap:8px;}
+.tl-end{font-size:9.5px;color:var(--text3);font-family:'JetBrains Mono',monospace;flex-shrink:0;font-weight:700;}
+.timeline{position:relative;flex:1;height:24px;background:repeating-linear-gradient(90deg,var(--bg2),var(--bg2) 1px,var(--bg3) 1px,var(--bg3) 2px),var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.tl-seg{position:absolute;top:3px;bottom:3px;background:linear-gradient(180deg,var(--primary2),var(--primary));border-radius:3px;min-width:3px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:800;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.18);transition:filter .1s,transform .1s;overflow:hidden;}
+.tl-seg:hover{filter:brightness(1.12);transform:scaleY(1.12);z-index:2;}
+.tl-seg.rej{background:linear-gradient(180deg,var(--coral2),var(--coral));}
+
 #scroller{flex:1;overflow:auto;min-height:0;padding:14px 16px;}
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text3);font-size:14px;gap:10px;padding:24px;text-align:center;}
 .empty-state .big{font-size:34px;}
@@ -212,6 +221,7 @@ kbd{display:inline-block;background:var(--bg2);border:1px solid var(--border);bo
     <div id="groupHd" style="display:none;">
       <div class="q" id="gQuery">—</div>
       <div class="sub" id="gSub"></div>
+      <div id="gTimeline"></div>
     </div>
     <div id="scroller">
       <div class="empty-state"><div class="big">🎬</div><div>请先登录,然后从左侧选择一组</div></div>
@@ -410,6 +420,7 @@ function renderGroup(){
     <span class="pill">${g.duration}s</span>
     ${g.auto_flag?'<span class="flag">⚠ 自动标记 · 需重点看</span>':''}
     <span class="gemini-note">Gemini 预标:各段不同=${g.gemini_segments_distinct}</span>`;
+  $('gTimeline').innerHTML=timelineHtml(g);
 
   const segHtml=g.segments.map(s=>{
     const r=sr(s.index);
@@ -424,7 +435,7 @@ function renderGroup(){
       return `<div class="neg ${bad?'bad':''}" onclick="toggleNeg(${s.index},${ni})">✗ ${esc(nv)}</div>`;
     }).join('')||'<div class="hint">（无 negatives）</div>';
     const clipUrl='/api/clip?path='+encodeURIComponent(s.clip);
-    return `<div class="seg ${r.query_occurs===false?'rej':''}">
+    return `<div class="seg ${r.query_occurs===false?'rej':''}" id="seg${s.index}">
       <div class="seg-hd">段 ${s.index}<span class="span">${s.span[0]}–${s.span[1]}s</span></div>
       <video src="${clipUrl}" controls loop muted preload="metadata"></video>
       <div class="seg-bd">
@@ -464,6 +475,29 @@ function renderGroup(){
   $('scroller').innerHTML=`<div class="segs">${segHtml}</div>${dc}`;
 }
 function chip(on,label,kind,fn){return `<span class="chip ${kind||''} ${on?'on':''}" onclick="${fn}">${esc(label)}</span>`;}
+
+/* Timeline: place each segment's span over the full video duration */
+function timelineHtml(g){
+  const dur=g.duration||Math.max(...g.segments.map(s=>s.span[1]),1);
+  const blocks=g.segments.map(s=>{
+    const r=sr(s.index);
+    const l=Math.max(0,Math.min(100,s.span[0]/dur*100));
+    const w=Math.max(1.2,Math.min(100-l,(s.span[1]-s.span[0])/dur*100));
+    const rej=(r&&r.query_occurs===false)?' rej':'';
+    return `<div class="tl-seg${rej}" style="left:${l.toFixed(2)}%;width:${w.toFixed(2)}%"`
+      +` title="段 ${s.index}: ${s.span[0]}–${s.span[1]}s(点击跳转)" onclick="jumpSeg(${s.index})">${s.index}</div>`;
+  }).join('');
+  return `<div class="tl-label">⏱ 各段在完整视频中的位置 · 点击方块跳到对应片段</div>`
+    +`<div class="tl-wrap"><span class="tl-end">0s</span>`
+    +`<div class="timeline">${blocks}</div><span class="tl-end">${dur}s</span></div>`;
+}
+function jumpSeg(i){
+  const el=document.getElementById('seg'+i); if(!el)return;
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+  el.style.transition='box-shadow .2s';
+  el.style.boxShadow='0 0 0 3px var(--primary)';
+  setTimeout(()=>{el.style.boxShadow='';},900);
+}
 
 /* ---------- Edits (auto-save) ---------- */
 function setOcc(i,v){sr(i).query_occurs=v;touch();renderGroup();}
