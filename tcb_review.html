@@ -114,6 +114,9 @@ button:disabled{opacity:.4;cursor:not-allowed;filter:none;transform:none;}
 .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;}
 .row .lbl{font-size:11px;color:var(--text2);font-weight:700;}
 .legend{font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}
+.tip{font-size:10px;color:var(--text3);line-height:1.5;margin:-3px 0 1px;}
+.tip b{color:var(--teal);font-weight:700;}
+.qh{font-size:10px;color:var(--text3);margin:0 5px 0 3px;cursor:help;border-bottom:1px dotted var(--border2);}
 
 .chip{border:1.5px solid var(--border);border-radius:14px;padding:3px 11px;cursor:pointer;user-select:none;font-size:11px;font-weight:700;color:var(--text2);background:#fff;transition:all .12s;}
 .chip:hover{border-color:var(--border2);}
@@ -443,17 +446,19 @@ function renderGroup(){
           ${chip(r.query_occurs===true,'是','yes',`setOcc(${s.index},true)`)}
           ${chip(r.query_occurs===false,'否','no',`setOcc(${s.index},false)`)}</div>
         <div class="legend">facts(★specific / ·shared)— 点击标错</div>
+        <div class="tip">当某条 fact <b>与画面不符/描述错误</b> 时点它(划掉)。若<b>内容对、只是 ★/· 标签标反</b>,别在这点——去下面 ② 的 specific 标「有问题」。</div>
         ${facts}
         <div class="legend">negatives(应"确实不存在")— 点击标错</div>
+        <div class="tip">当某条 negative <b>其实在画面里真的出现了</b>(它不该算"不存在")时点它(划掉)。</div>
         ${negs}
-        <div class="row"><span class="lbl">② 探针质量:</span></div>
-        <div class="row">facts
+        <div class="row"><span class="lbl">② 探针质量:</span><span class="tip" style="margin:0;">每维问一句,是→对,否→有问题;多数情况三个都「对」</span></div>
+        <div class="row" title="删掉标错的之后:剩下的 facts 是否准确、且没漏掉本段关键区分细节? 例:漏了『手里还拿着盖子』这种本段独有细节 → 有问题">facts<span class="qh">剩下的准确、没漏关键细节?</span>
           ${chip(r.facts_ok==='good','对','',`setQ(${s.index},'facts_ok','good')`)}
           ${chip(r.facts_ok==='issue','有问题','warn',`setQ(${s.index},'facts_ok','issue')`)}</div>
-        <div class="row">specific
+        <div class="row" title="★specific / ·shared 分对了吗? 例:『男子穿黑衬衫』全组每段都有,却被标成 ★specific(内容真、但标签错)→ 有问题">specific<span class="qh">★/· 标签分对了?</span>
           ${chip(r.specific_ok==='good','对','',`setQ(${s.index},'specific_ok','good')`)}
           ${chip(r.specific_ok==='issue','有问题','warn',`setQ(${s.index},'specific_ok','issue')`)}</div>
-        <div class="row">negatives
+        <div class="row" title="剩下的 negatives 是否确实不存在、且有干扰性(不是废话)? 例:negatives 太少/太离谱、起不到干扰作用 → 有问题">negatives<span class="qh">确实不存在、且有干扰性?</span>
           ${chip(r.negatives_ok==='good','对','',`setQ(${s.index},'negatives_ok','good')`)}
           ${chip(r.negatives_ok==='issue','有问题','warn',`setQ(${s.index},'negatives_ok','issue')`)}</div>
       </div></div>`;
