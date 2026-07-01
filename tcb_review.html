@@ -274,13 +274,13 @@ kbd{display:inline-block;background:var(--bg2);border:1px solid var(--border);bo
             <ul>
               <li>某条 <span class="gtag-spec">fact</span> <span class="em">与画面不符/描述错误</span> → 点它划掉。</li>
               <li>某条 <span class="em">negative</span> <span class="em">其实在画面里真的出现了</span> → 点它划掉。</li>
-              <li><span class="em">注意:</span>fact <span class="em">内容对、只是 ★/· 标反</span>,<span class="em">别点</span> —— 那属于下面 specific。</li>
+              <li><span class="em">注意:</span>fact <span class="em">内容对、只是 <span class="gtag-spec">★ specific</span>/<span class="gtag-shar">· shared</span> 标反</span>,<span class="em">别点</span> —— 那属于下面 specific。</li>
             </ul>
           </li>
           <li><span class="kw">② 三个是非题</span>(对<span class="em">每一维</span>盖个章,是→对,否→有问题;<span class="em">多数情况三个都「对」</span>):
             <ul>
               <li><span class="em">facts</span>:删掉标错的后,剩下的<span class="em">准确、没漏关键区分细节?</span><br><span class="gkbd">例:漏了『手里还拿着盖子』这种本段独有细节 → 有问题</span></li>
-              <li><span class="em">specific</span>:<span class="em">★/· 标签分对了?</span>(这是点击救不了的一维)<br><span class="gkbd">例:『男子穿黑衬衫』全组每段都有却标成 ★specific(真、但标签错)→ 有问题</span></li>
+              <li><span class="em">specific</span>:<span class="em"><span class="gtag-spec">★ specific</span> / <span class="gtag-shar">· shared</span> 标签分对了?</span>(这是点击救不了的一维)<br><span class="gkbd">例:『男子穿黑衬衫』全组每段都有却标成 ★specific(真、但标签错)→ 有问题</span></li>
               <li><span class="em">negatives</span>:剩下的<span class="em">确实不存在、且有干扰性(非废话)?</span><br><span class="gkbd">例:negatives 太少/太离谱、起不到干扰 → 有问题</span></li>
             </ul>
           </li>
@@ -458,7 +458,7 @@ function renderGroup(){
           ${chip(r.query_occurs===true,'是','yes',`setOcc(${s.index},true)`)}
           ${chip(r.query_occurs===false,'否','no',`setOcc(${s.index},false)`)}</div>
         <div class="legend">facts(★specific / ·shared)— 点击标错</div>
-        <div class="tip">当某条 fact <b>与画面不符/描述错误</b> 时点它(划掉)。若<b>内容对、只是 ★/· 标签标反</b>,别在这点——去下面 ② 的 specific 标「有问题」。</div>
+        <div class="tip">当某条 fact <b>与画面不符/描述错误</b> 时点它(划掉)。若<b>内容对、只是 ★ specific / · shared 标反</b>,别在这点——去下面 ② 的 specific 标「有问题」。</div>
         ${facts}
         <div class="legend">negatives(应"确实不存在")— 点击标错</div>
         <div class="tip">当某条 negative <b>其实在画面里真的出现了</b>(它不该算"不存在")时点它(划掉)。</div>
@@ -467,7 +467,7 @@ function renderGroup(){
         <div class="row" title="删掉标错的之后:剩下的 facts 是否准确、且没漏掉本段关键区分细节? 例:漏了『手里还拿着盖子』这种本段独有细节 → 有问题">facts<span class="qh">剩下的准确、没漏关键细节?</span>
           ${chip(r.facts_ok==='good','对','',`setQ(${s.index},'facts_ok','good')`)}
           ${chip(r.facts_ok==='issue','有问题','warn',`setQ(${s.index},'facts_ok','issue')`)}</div>
-        <div class="row" title="★specific / ·shared 分对了吗? 例:『男子穿黑衬衫』全组每段都有,却被标成 ★specific(内容真、但标签错)→ 有问题">specific<span class="qh">★/· 标签分对了?</span>
+        <div class="row" title="★specific / ·shared 分对了吗? 例:『男子穿黑衬衫』全组每段都有,却被标成 ★specific(内容真、但标签错)→ 有问题">specific<span class="qh">★ specific / · shared 标签分对了?</span>
           ${chip(r.specific_ok==='good','对','',`setQ(${s.index},'specific_ok','good')`)}
           ${chip(r.specific_ok==='issue','有问题','warn',`setQ(${s.index},'specific_ok','issue')`)}</div>
         <div class="row" title="剩下的 negatives 是否确实不存在、且有干扰性(不是废话)? 例:negatives 太少/太离谱、起不到干扰作用 → 有问题">negatives<span class="qh">确实不存在、且有干扰性?</span>
